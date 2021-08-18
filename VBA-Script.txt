@@ -1,0 +1,84 @@
+Sub stock_market()
+    For Each ws In Worksheets
+        Dim WorksheetName, Ticker, Greatest_Increase_Ticker, Greatest_Decrease_Ticker, Greatest_Total_Volume_Ticker As String
+        Dim Total_Stock_Volume, Yearly_Change, Percent_Change, Greatest_Increase, Greatest_Decrease, Greatest_Total_Volume, Value As Double
+        Dim Openning_Price, Closing_Price As Variant
+        Dim filledOpenningPrice As Boolean
+        Dim Summary_Table_Row As Integer
+    
+        Summary_Table_Row = 2
+        lastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+        ws.Cells(1, 9).Value = "Ticker"
+        ws.Cells(1, 10).Value = "Yearly Change"
+        ws.Cells(1, 11).Value = "Percent Change"
+        ws.Cells(1, 12).Value = "Total Stock Volume"
+        ws.Cells(2, 15).Value = "Greatest % Increase"
+        ws.Cells(3, 15).Value = "Greatest % Decrease"
+        ws.Cells(4, 15).Value = "Greatest Total Volume"
+        ws.Cells(1, 16).Value = "Ticker"
+        ws.Cells(1, 17).Value = "Value"
+  
+        For i = 2 To lastRow
+            If filledOpenningPrice = False Then
+                Openning_Price = ws.Cells(i, 3).Value
+                filledOpenningPrice = True
+            End If
+            
+            Total_Stock_Volume = Total_Stock_Volume + ws.Cells(i, 7).Value
+    
+            If ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+                Ticker = ws.Cells(i, 1).Value
+                ws.Range("I" & Summary_Table_Row).Value = Ticker
+                Summary_Table_Row = Summary_Table_Row + 1
+                Closing_Price = ws.Cells(i, 6).Value
+                Yearly_Change = (Closing_Price - Openning_Price)
+                ws.Range("J" & Summary_Table_Row - 1).Value = Round(Yearly_Change, 2)
+                If Openning_Price <> 0 Then
+                    Percent_Change = Yearly_Change / Openning_Price
+                Else
+                    Percent_Change = 0
+                End If
+                ws.Range("K" & Summary_Table_Row - 1).Value = FormatPercent(Percent_Change, 2)
+                ws.Range("L" & Summary_Table_Row - 1).Value = Total_Stock_Volume
+                If Yearly_Change > 0 Then
+                    ws.Cells(Summary_Table_Row - 1, 10).Interior.ColorIndex = 4
+                Else
+                    ws.Cells(Summary_Table_Row - 1, 10).Interior.ColorIndex = 3
+                End If
+                    
+                If ws.Cells(Summary_Table_Row, 11).Value > Greatest_Increase Then
+                    Greatest_Increase = ws.Cells(Summary_Table_Row, 11).Value
+                    Greatest_Increase_Ticker = ws.Cells(Summary_Table_Row, 9).Value
+                End If
+                
+                If ws.Cells(Summary_Table_Row, 11).Value < Greatest_Decrease Then
+                    Greatest_Decrease = ws.Cells(Summary_Table_Row, 11).Value
+                    Greatest_Decrease_Ticker = ws.Cells(Summary_Table_Row, 9).Value
+                End If
+                
+                If ws.Cells(Summary_Table_Row, 12).Value > Greatest_Total_Volume Then
+                    Greatest_Total_Volume = ws.Cells(Summary_Table_Row, 12).Value
+                    Greatest_Total_Volume_Ticker = ws.Cells(Summary_Table_Row, 9).Value
+                End If
+                
+                filledOpenningPrice = False
+                Closing_Price = 0
+                Openning_Price = 0
+                Total_Stock_Volume = 0
+            End If
+        Next i
+        
+        Greatest_Increase = FormatPercent(Greatest_Increase, 2)
+        Greatest_Decrease = FormatPercent(Greatest_Decrease, 2)
+        ws.Range("Q" & 2).Value = Greatest_Increase
+        ws.Range("Q" & 3).Value = Greatest_Decrease
+        ws.Range("Q" & 4).Value = Greatest_Total_Volume
+        ws.Range("P" & 2).Value = Greatest_Increase_Ticker
+        ws.Range("P" & 3).Value = Greatest_Decrease_Ticker
+        ws.Range("P" & 4).Value = Greatest_Total_Volume_Ticker
+        
+        Greatest_Increase = 0
+        Greatest_Decrease = 0
+        Greatest_Total_Volume = 0
+    Next ws
+End Sub
